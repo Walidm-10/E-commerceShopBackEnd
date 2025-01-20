@@ -32,7 +32,7 @@ async function UploadProductController(req, res) {
     }
 
     //
-    const baseUrl = "http://localhost:8080";
+    const baseUrl = "https://e-commerceshopbackend-production.up.railway.app";
 
     const files = req.files.productImage;
     const uploadedFilePaths = [];
@@ -49,7 +49,7 @@ async function UploadProductController(req, res) {
 
       //
       const fileUrl = `${baseUrl}/uploads/${uniqueFileName}`;
-      uploadedFilePaths.push(fileUrl); // 
+      uploadedFilePaths.push(fileUrl); //
 
       // uploadedFilePaths.push(uploadPath);
     }
