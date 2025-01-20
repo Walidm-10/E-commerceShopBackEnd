@@ -10,7 +10,7 @@ const userLogout = require("../controller/user/userLogout");
 const allUsers = require("../controller/user/allUsers");
 const updateUser = require("../controller/user/updateUser");
 const {
-  fileUploadMiddleware,
+  upload,
   UploadProductController,
 } = require("../controller/product/uploadProduct");
 const getProductController = require("../controller/product/getProduct");
@@ -35,12 +35,9 @@ router.get("/userLogout", userLogout);
 //admin panel
 router.get("/all-user", authToken, allUsers);
 router.post("/update-user", authToken, updateUser);
-
-//product
 router.post(
   "/upload-product",
-  authToken,
-  fileUploadMiddleware,
+  upload.array("productImage", 5),
   UploadProductController
 );
 router.get("/get-product", getProductController);

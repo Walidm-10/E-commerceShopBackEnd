@@ -1,13 +1,18 @@
-const expressFileUpload = require("express-fileupload");
-const path = require("path");
 const uploadProductPermission = require("../../helpers/permission");
 const productModel = require("../../models/productModel");
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("./cloudinaryConfig"); // Import Cloudinary config
 
-// Middleware for file uploads
-const fileUploadMiddleware = expressFileUpload({
-  useTempFiles: true,
-  tempFileDir: path.join(__dirname, "../../tmp"),
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "ecommerce-products", // Folder name in Cloudinary
+    allowed_formats: ["jpg", "png", "jpeg", "webp"], // Allow only specific formats
+  },
 });
+
+const upload = multer({ storage: storage });
 
 async function UploadProductController(req, res) {
   try {
@@ -22,42 +27,13 @@ async function UploadProductController(req, res) {
       });
     }
 
-    // Check if files are included
-    if (!req.files || !req.files.productImage) {
-      return res.status(400).json({
-        message: "No files uploaded",
-        error: true,
-        success: false,
-      });
-    }
-
-    //
-    const baseUrl = "https://e-commerceshopbackend-production.up.railway.app";
-
-    const files = req.files.productImage;
-    const uploadedFilePaths = [];
-
-    // Handle single or multiple files
-    const fileArray = Array.isArray(files) ? files : [files];
-
-    for (const file of fileArray) {
-      const uniqueFileName = `${Date.now()}-${file.name}`;
-      const uploadPath = path.join(__dirname, "../../uploads", uniqueFileName);
-
-      // Move file to uploads directory
-      await file.mv(uploadPath);
-
-      //
-      const fileUrl = `${baseUrl}/uploads/${uniqueFileName}`;
-      uploadedFilePaths.push(fileUrl); //
-
-      // uploadedFilePaths.push(uploadPath);
-    }
+    // Extract image URLs from uploaded files
+    const uploadedFilePaths = req.files.map((file) => file.path);
 
     // Create product data object
     const productData = {
       ...req.body,
-      productImage: uploadedFilePaths, // Add file paths
+      productImage: uploadedFilePaths, // Store Cloudinary URLs in the database
     };
 
     // Save product to the database
@@ -79,5 +55,4 @@ async function UploadProductController(req, res) {
     });
   }
 }
-
-module.exports = { fileUploadMiddleware, UploadProductController };
+module.exports = { upload, UploadProductController };
